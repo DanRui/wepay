@@ -26,9 +26,19 @@ public final class Orders extends Component {
     private static final String ORDER_QUERY = "https://api.mch.weixin.qq.com/pay/orderquery";
 
     /**
+     * 查询订单（沙箱环境）
+     */
+    private static final String ORDER_QUERY_SANDBOX = "https://api.mch.weixin.qq.com/sandboxnew/pay/orderquery";
+
+    /**
      * 关闭订单
      */
     private static final String ORDER_CLOSE = "https://api.mch.weixin.qq.com/pay/closeorder";
+
+    /**
+     * 关闭订单(沙箱环境)
+     */
+    private static final String ORDER_CLOSE_SANDBOX = "https://api.mch.weixin.qq.com/sandboxnew/pay/closeorder";
 
     Orders(Wepay wepay) {
         super(wepay);
@@ -39,11 +49,11 @@ public final class Orders extends Component {
      * @param transactionId 微信订单号
      * @return PayOrder对象，或抛WepayException
      */
-    public WePayOrder queryByTransactionId(String transactionId){
+    public WePayOrder queryByTransactionId(String transactionId, boolean isSandbox) {
         checkNotNullAndEmpty(transactionId, "transactionId");
         Map<String, String> queryParams = new TreeMap<>();
         put(queryParams, WepayField.TRANSACTION_ID, transactionId);
-        return doQueryOrder(queryParams);
+        return doQueryOrder(queryParams, isSandbox);
     }
 
     /**
@@ -51,16 +61,21 @@ public final class Orders extends Component {
      * @param outTradeNo 商户订单号
      * @return PayOrder对象，或抛WepayException
      */
-    public WePayOrder queryByOutTradeNo(String outTradeNo){
+    public WePayOrder queryByOutTradeNo(String outTradeNo, boolean isSandbox) {
         checkNotNullAndEmpty(outTradeNo, "outTradeNo");
         Map<String, String> queryParams = new TreeMap<>();
         put(queryParams, WepayField.OUT_TRADE_NO, outTradeNo);
-        return doQueryOrder(queryParams);
+        return doQueryOrder(queryParams, isSandbox);
     }
 
-    private WePayOrder doQueryOrder(Map<String, String> queryParams) {
+    private WePayOrder doQueryOrder(Map<String, String> queryParams, boolean isSandbox) {
         buildQueryParams(queryParams);
-        Map<String, Object> orderData = doPost(ORDER_QUERY, queryParams);
+        Map<String, Object> orderData = null;
+        if (isSandbox) {
+            orderData = doPost(ORDER_QUERY_SANDBOX, queryParams);
+        } else {
+            orderData = doPost(ORDER_QUERY, queryParams);
+        }
         WePayOrder order = Jsons.DEFAULT.fromJson(Jsons.DEFAULT.toJson(orderData), WePayOrder.class);
         setCoupons(order, orderData);
         return order;
@@ -89,11 +104,14 @@ public final class Orders extends Component {
      * @param outTradeNo 商户订单号
      * @return 关闭成功返回true，或抛WepayException
      */
-    public Boolean closeOrder(String outTradeNo){
+    public Boolean closeOrder(String outTradeNo, boolean isSandbox) {
         checkNotNullAndEmpty(outTradeNo, "outTradeNo");
         Map<String, String> closeParams = new TreeMap<>();
         put(closeParams, WepayField.OUT_TRADE_NO, outTradeNo);
         buildCloseParams(closeParams);
+        if (isSandbox) {
+            return doPost(ORDER_QUERY_SANDBOX, closeParams) != null;
+        }
         return doPost(ORDER_CLOSE, closeParams) != null;
     }
 

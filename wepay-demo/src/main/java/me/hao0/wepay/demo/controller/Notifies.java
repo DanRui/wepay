@@ -34,7 +34,7 @@ public class Notifies {
      * @return 处理结果
      */
     @RequestMapping("/paid")
-    public String paid(HttpServletRequest request){
+    public String paid(HttpServletRequest request) {
 
         String notifyXml = getPostRequestBody(request);
         if (notifyXml.isEmpty()){
@@ -43,7 +43,7 @@ public class Notifies {
 
         Map<String, Object> notifyParams = Maps.toMap(notifyXml);
 
-        if (wepaySupport.verifySign(notifyParams)){
+        if (wepaySupport.verifySign(notifyParams)) {
 
             // TODO business logic
 

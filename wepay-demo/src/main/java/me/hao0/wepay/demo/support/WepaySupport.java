@@ -4,6 +4,9 @@ import com.google.common.io.ByteStreams;
 import me.hao0.common.date.Dates;
 import me.hao0.wepay.core.Wepay;
 import me.hao0.wepay.core.WepayBuilder;
+import me.hao0.wepay.model.order.WePayOrder;
+import me.hao0.wepay.model.pay.AppPayResponse;
+import me.hao0.wepay.model.pay.PayRequest;
 import me.hao0.wepay.model.pay.QrPayRequest;
 import me.hao0.wepay.model.refund.RefundApplyRequest;
 import me.hao0.wepay.model.refund.RefundApplyResponse;
@@ -37,7 +40,8 @@ public class WepaySupport {
 
     @PostConstruct
     public void initWepay() {
-        try(InputStream in = this.getClass().getClassLoader().getResourceAsStream("cert.p12")) {
+        try {
+            InputStream in = this.getClass().getClassLoader().getResourceAsStream("apiclient_cert.p12");
             // 加载证书文件
             byte[] certs = ByteStreams.toByteArray(in);
             wepay = WepayBuilder.newBuilder(appId, appKey, mchId)
@@ -62,7 +66,46 @@ public class WepaySupport {
         request.setNotifyUrl(payNotifyUrl);
         request.setOutTradeNo(orderNumber);
         request.setTimeStart(Dates.now("yyyyMMddHHmmss"));
-        return wepay.pay().qrPay(request).getCodeUrl();
+        return wepay.pay().qrPay(request, true).getCodeUrl();
+    }
+
+    /**
+     * app支付
+     * @param orderNumber 订单号
+     * @return
+     */
+    public String appPay(String orderNumber, Integer totalFee) {
+        PayRequest request = new PayRequest();
+        request.setBody("测试订单");
+        request.setClientIp("127.0.0.1");
+        request.setTotalFee(totalFee);
+        request.setNotifyUrl(payNotifyUrl);
+        request.setOutTradeNo(orderNumber);
+        request.setTimeStart(Dates.now("yyyyMMddHHmmss"));
+        AppPayResponse resp = wepay.pay().appPay(request, true);
+        return resp.getPrepayId();
+    }
+
+    /**
+     * app支付(含免充值代金券)
+     * @param orderNumber 订单号
+     * @return
+     */
+    public String appPayCoupons(String orderNumber, Integer totalFee) {
+        PayRequest request = new PayRequest();
+        request.setBody("测试订单");
+        request.setClientIp("127.0.0.1");
+        request.setTotalFee(totalFee);
+        request.setNotifyUrl(payNotifyUrl);
+        request.setOutTradeNo(orderNumber);
+        request.setTimeStart(Dates.now("yyyyMMddHHmmss"));
+        AppPayResponse resp = wepay.pay().appPay(request, true);
+        return resp.getPrepayId();
+    }
+
+    public void queryOrderByOutTradeNo(String outTradeNo){
+        WePayOrder order = wepay.order().queryByOutTradeNo(outTradeNo, true);
+        System.out.println(order);
     }
 
     /**

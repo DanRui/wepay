@@ -8,12 +8,7 @@ import me.hao0.wepay.model.bill.BillDetail;
 import me.hao0.wepay.model.bill.CommonBill;
 import me.hao0.wepay.model.bill.RefundBill;
 import me.hao0.wepay.model.order.WePayOrder;
-import me.hao0.wepay.model.pay.AppPayResponse;
-import me.hao0.wepay.model.pay.JsPayRequest;
-import me.hao0.wepay.model.pay.JsPayResponse;
-import me.hao0.wepay.model.pay.PayRequest;
-import me.hao0.wepay.model.pay.QrPayRequest;
-import me.hao0.wepay.model.pay.QrPayResponse;
+import me.hao0.wepay.model.pay.*;
 import me.hao0.wepay.model.refund.RefundApplyRequest;
 import me.hao0.wepay.model.refund.RefundApplyResponse;
 import me.hao0.wepay.model.refund.RefundQueryResponse;
@@ -38,25 +33,41 @@ public class WepayTest {
 
     private String openId = "onN_8trIW7PSoXLMzMSWySb5jfdY";
 
+    private String appId = "wx446fba6f8b4f9c14";
+
+    private String appKey = "qwertyuiop789asdfghjkl456zxcvbnm";
+
+    private String mchId = "1511857521";
+
     @Before
     public void init() throws IOException {
+        /*
         Properties props = new Properties();
         InputStream in = Object.class.getResourceAsStream("/dev.properties");
         props.load(in);
         in.close();
+        */
 
-        Path path = Paths.get("/Users/haolin/GitHub/wepay/wepay-core/src/test/resources/cert.p12");
+        Path path = Paths.get("E:\\Cert\\apiclient_cert.p12");
         byte[] data = Files.readAllBytes(path);
 
-        wepay = WepayBuilder.newBuilder(
-                props.getProperty("appId"),
-                props.getProperty("appKey"),
-                props.getProperty("mchId"))
-                //.certPasswd(props.getProperty("mchId"))
-                //.certs(data)
+        wepay = WepayBuilder.newBuilder(appId, appKey, mchId)
+                //props.getProperty("appId"),
+                //props.getProperty("appKey"),
+                //props.getProperty("mchId"))
+                .certPasswd(mchId)
+                .certs(data)
                 .build();
 
 
+    }
+
+    @Test
+    public void testGetSignKey() {
+        PayRequest payRequest = new PayRequest();
+        GetSignKeyResponse resp = wepay.pay().getSignKey(payRequest);
+        assertNotNull(resp);
+        System.out.println(resp);
     }
 
     @Test
@@ -69,7 +80,7 @@ public class WepayTest {
         request.setOpenId(openId);
         request.setOutTradeNo("TEST12345678js");
         request.setTimeStart(Dates.now("yyyyMMddHHmmss"));
-        JsPayResponse resp = wepay.pay().jsPay(request);
+        JsPayResponse resp = wepay.pay().jsPay(request, true);
         assertNotNull(resp);
         System.out.println(resp);
     }
@@ -83,7 +94,7 @@ public class WepayTest {
         request.setNotifyUrl("http://www.xxx.com/notify");
         request.setOutTradeNo("TEST1122334455");
         request.setTimeStart(Dates.now("yyyyMMddHHmmss"));
-        QrPayResponse resp = wepay.pay().qrPay(request);
+        QrPayResponse resp = wepay.pay().qrPay(request, true);
         assertNotNull(resp);
         System.out.println(resp);
     }
@@ -111,28 +122,28 @@ public class WepayTest {
         request.setNotifyUrl("http://www.xxx.com/notify");
         request.setOutTradeNo("TEST12345678app");
         request.setTimeStart(Dates.now("yyyyMMddHHmmss"));
-        AppPayResponse resp = wepay.pay().appPay(request);
+        AppPayResponse resp = wepay.pay().appPay(request, false);
         assertNotNull(resp);
         System.out.println(resp);
     }
 
     @Test
     public void testQueryOrderByOutTradeNo(){
-        WePayOrder order = wepay.order().queryByOutTradeNo("TEST3344520");
+        WePayOrder order = wepay.order().queryByOutTradeNo("TEST3344520", false);
         assertNotNull(order);
         System.out.println(order);
     }
 
     @Test
     public void testQueryOrderByTransactionId(){
-        WePayOrder order = wepay.order().queryByTransactionId("1000530784201510111158030445");
+        WePayOrder order = wepay.order().queryByTransactionId("1000530784201510111158030445", false);
         assertNotNull(order);
         System.out.println(order);
     }
 
     @Test
     public void testCloseOrder(){
-        assertTrue(wepay.order().closeOrder("TEST12345678"));
+        assertTrue(wepay.order().closeOrder("TEST12345678", false));
     }
 
     @Test
@@ -171,19 +182,19 @@ public class WepayTest {
 
     @Test
     public void testQueryBill(){
-        BillDetail<CommonBill> allBill = wepay.bill().queryAll(null, "20151203");
+        BillDetail<CommonBill> allBill = wepay.bill().queryAll(null, "20151203", false);
         assertNotNull(allBill);
         assertEquals(allBill.getBills().size(), allBill.getCount().getTradeTotalCount().intValue());
         System.out.println(allBill.getBills().get(0));
         System.out.println(allBill.getCount());
 
-        BillDetail<Bill> successBill = wepay.bill().querySuccess(null, "20151203");
+        BillDetail<Bill> successBill = wepay.bill().querySuccess(null, "20151203", false);
         assertNotNull(successBill);
         assertEquals(successBill.getBills().size(), successBill.getCount().getTradeTotalCount().intValue());
         System.out.println(successBill.getBills().get(0));
         System.out.println(successBill.getCount());
 
-        BillDetail<RefundBill> refundBill = wepay.bill().queryRefund(null, "20151203");
+        BillDetail<RefundBill> refundBill = wepay.bill().queryRefund(null, "20151203", false);
         assertNotNull(refundBill);
         assertEquals(refundBill.getBills().size(), refundBill.getCount().getTradeTotalCount().intValue());
         System.out.println(refundBill.getBills().get(0));

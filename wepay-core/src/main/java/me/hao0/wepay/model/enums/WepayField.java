@@ -446,4 +446,11 @@ public final class WepayField {
      */
     public static final String REFUND_RECV_ACCOUNT = "refund_recv_accout";
 
+    /**
+     * 沙箱密钥
+     */
+    public static final String SANDBOX_SIGN_KEY = "sandbox_signkey";
+
+
+
 }

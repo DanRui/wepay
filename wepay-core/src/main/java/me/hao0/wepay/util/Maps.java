@@ -23,9 +23,12 @@ public final class Maps {
      * @param xml xml内容
      * @return Map对象
      */
-    public static Map<String, Object> toMap(String xml){
-        xml = xml.replaceAll("(\\r|\\n)", "");
-        if (Strings.isNullOrEmpty(xml)){
+    public static Map<String, Object> toMap(String xml) {
+        if (Strings.isNullOrEmpty(xml)) {
+            return Collections.emptyMap();
+        }
+        xml = xml.replaceAll("(\\r|\\n)", "").replaceAll("\\s", "");
+        if (Strings.isNullOrEmpty(xml)) {
             return Collections.emptyMap();
         }
         XmlReaders readers = XmlReaders.create(xml);
@@ -39,16 +42,16 @@ public final class Maps {
      */
     public static Map<String, Object> toMap(XmlReaders readers){
         Node root = readers.getNode("xml");
-        if (root == null){
+        if (root == null) {
             return Collections.emptyMap();
         }
         NodeList children = root.getChildNodes();
-        if (children.getLength() == 0){
+        if (children.getLength() == 0) {
             return Collections.emptyMap();
         }
         Map<String, Object> data = new HashMap<>(children.getLength());
         Node n;
-        for (int i = 0; i<children.getLength(); i++){
+        for (int i = 0 ; i < children.getLength() ; i ++) {
             n = children.item(i);
             data.put(n.getNodeName(), n.getTextContent());
         }
@@ -62,11 +65,12 @@ public final class Maps {
      */
     public static String toXml(final Map<String, String> params) {
         XmlWriters writers = XmlWriters.create();
-        for (Map.Entry<String, String> param : params.entrySet()){
-            if (!Strings.isNullOrEmpty(param.getValue())){
+        for (Map.Entry<String, String> param : params.entrySet()) {
+            if (!Strings.isNullOrEmpty(param.getValue())) {
                 writers.element(param.getKey(), param.getValue());
             }
         }
         return writers.build();
     }
+
 }

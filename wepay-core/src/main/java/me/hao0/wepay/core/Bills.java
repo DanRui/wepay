@@ -35,6 +35,11 @@ public class Bills extends Component {
      */
     private static final String DOWNLOAD = "https://api.mch.weixin.qq.com/pay/downloadbill";
 
+    /**
+     * 下载账单(沙箱环境)
+     */
+    private static final String DOWNLOAD_SANDBOX = "https://api.mch.weixin.qq.com/sandboxnew/pay/downloadbill";
+
     private static final String LINE_SEPARATOR = "\\n";
 
     private static final String FIELD_SEPARATOR = ",`";
@@ -49,8 +54,8 @@ public class Bills extends Component {
      * @param date 账单的日期
      * @return 账单明细
      */
-    public BillDetail<CommonBill> queryAll(String deviceInfo, String date){
-        String data = query(deviceInfo, date, BillType.ALL);
+    public BillDetail<CommonBill> queryAll(String deviceInfo, String date, boolean isSandbox) {
+        String data = query(deviceInfo, date, BillType.ALL, isSandbox);
         return renderBillDetail(data, BillFields.ALL, CommonBill.class);
     }
 
@@ -60,8 +65,8 @@ public class Bills extends Component {
      * @param date 账单的日期
      * @return 账单明细
      */
-    public BillDetail<Bill> querySuccess(String deviceInfo, String date){
-        String data = query(deviceInfo, date, BillType.SUCCESS);
+    public BillDetail<Bill> querySuccess(String deviceInfo, String date, boolean isSandbox) {
+        String data = query(deviceInfo, date, BillType.SUCCESS, isSandbox);
         return renderBillDetail(data, BillFields.SUCCESS, Bill.class);
     }
 
@@ -71,8 +76,8 @@ public class Bills extends Component {
      * @param date 账单的日期
      * @return 账单明细
      */
-    public BillDetail<RefundBill> queryRefund(String deviceInfo, String date){
-        String data = query(deviceInfo, date, BillType.REFUND);
+    public BillDetail<RefundBill> queryRefund(String deviceInfo, String date, boolean isSandbox) {
+        String data = query(deviceInfo, date, BillType.REFUND, isSandbox);
         return renderBillDetail(data, BillFields.REFUND, RefundBill.class);
     }
 
@@ -124,11 +129,16 @@ public class Bills extends Component {
      *             @see me.hao0.wepay.model.enums.BillType
      * @return 账单数据
      */
-    public String query(String deviceInfo, String date, BillType type){
+    public String query(String deviceInfo, String date, BillType type, boolean isSandbox) {
         checkNotNullAndEmpty(date, "date");
         checkNotNull(type, "bill type can't be null");
         Map<String, String> downloadParams = buildDownloadParams(deviceInfo, date, type);
-        String billData = Http.post(DOWNLOAD).body(Maps.toXml(downloadParams)).request();
+        String billData = null;
+        if (isSandbox) {
+            billData = Http.post(DOWNLOAD_SANDBOX).body(Maps.toXml(downloadParams)).request();
+        } else {
+            billData = Http.post(DOWNLOAD).body(Maps.toXml(downloadParams)).request();
+        }
         if (billData.startsWith("<xml>")){
             XmlReaders readers = XmlReaders.create(billData);
             throw new WepayException(

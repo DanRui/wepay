@@ -1,6 +1,8 @@
 package me.hao0.wepay.demo.controller;
 
 import me.hao0.wepay.demo.support.WepaySupport;
+import me.hao0.wepay.model.pay.GetSignKeyResponse;
+import me.hao0.wepay.model.pay.PayRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +40,25 @@ public class Pays {
             response.sendRedirect(qrUrl);
         } catch (IOException e) {
             log.error("failed to qr pay(orderNumber={}), cause: {}",
+                    orderNumber, e.getMessage());
+        }
+    }
+
+    /**
+     * app支付
+     * @param orderNumber 商户订单号
+     */
+    @RequestMapping(value = "/apppay")
+    public void appPay(
+            @RequestParam("orderNumber") String orderNumber,
+            @RequestParam("totalFee") Integer totalFee,
+            HttpServletResponse response){
+        try {
+            String prepayId = wepaySupport.appPay(orderNumber, totalFee);
+            //String qrUrl = wepaySupport.qrPay(orderNumber);
+            //response.sendRedirect(qrUrl);
+        } catch (Exception e) {
+            log.error("failed to app pay(orderNumber={}), cause: {}",
                     orderNumber, e.getMessage());
         }
     }

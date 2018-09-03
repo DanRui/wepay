@@ -29,7 +29,7 @@ public abstract class Component {
     protected Map<String, Object> doPost(final String url, final Map<String, String> params){
         String requestBody = Maps.toXml(params);
         String resp = Http.post(url).ssl().body(requestBody).request();
-        Map<String, Object> respMap = toMap(resp.replaceAll("(\\r|\\n)", ""));
+        Map<String, Object> respMap = toMap(resp.replaceAll("(\\r|\\n)", "").replaceAll("\\s", ""));
         if (!doVerifySign(respMap)){
             throw new SignException("微信响应内容签名非法: " + respMap);
         }
@@ -40,7 +40,7 @@ public abstract class Component {
         String requestBody = Maps.toXml(params);
         String resp = Https.post(url).body(requestBody)
                 .ssLSocketFactory(wepay.getSslSocketFactory()).request();
-        Map<String, Object> respMap = toMap(resp.replaceAll("(\\r|\\n)", ""));
+        Map<String, Object> respMap = toMap(resp.replaceAll("(\\r|\\n)", "").replaceAll("\\s", ""));
         if (!doVerifySign(respMap)){
             throw new SignException("微信响应内容签名非法: " + respMap);
         }
