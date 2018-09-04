@@ -33,11 +33,11 @@ public class WepayTest {
 
     private String openId = "onN_8trIW7PSoXLMzMSWySb5jfdY";
 
-    private String appId = "wx446fba6f8b4f9c14";
+    private String appId = "";
 
-    private String appKey = "qwertyuiop789asdfghjkl456zxcvbnm";
+    private String appKey = "";
 
-    private String mchId = "1511857521";
+    private String mchId = "";
 
     @Before
     public void init() throws IOException {
